@@ -1,0 +1,1 @@
+Coloque o APK que deseja analisar nesta pasta.
