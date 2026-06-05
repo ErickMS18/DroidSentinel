@@ -6,9 +6,7 @@ import joblib
 import subprocess
 import pandas as pd
 
-# ==========================================
-# CONFIGURAÇÃO
-# ==========================================
+# Diretórios utilizados pelo detector
 
 APK_FOLDER = "input"
 TEMP_FOLDER = "temp"
@@ -18,9 +16,7 @@ MODEL_PATH = "model/rf_multiview_production.pkl"
 SELECTOR_PATH = "model/variance_selector.pkl"
 FEATURES_PATH = "model/feature_names.pkl"
 
-# ==========================================
-# CARREGAR MODELO
-# ==========================================
+# Carrega modelo e artefatos utilizados na classificação
 
 model = joblib.load(MODEL_PATH)
 
@@ -30,9 +26,7 @@ feature_names = joblib.load(FEATURES_PATH)
 
 print("Modelo carregado.")
 
-# ==========================================
-# ENCONTRAR APK
-# ==========================================
+# Procura o APK informado pelo usuário
 
 apk_files = glob.glob(
     os.path.join(APK_FOLDER, "*.apk")
@@ -47,9 +41,7 @@ apk_path = apk_files[0]
 
 print(f"APK encontrado: {apk_path}")
 
-# ==========================================
-# PREPARAR TEMP
-# ==========================================
+# Cria área temporária para execução do AndroPyTool
 
 if os.path.exists(TEMP_FOLDER):
     shutil.rmtree(
@@ -72,9 +64,7 @@ shutil.copy2(
     temp_apk_path
 )
 
-# ==========================================
-# EXECUTAR ANDROPYTOOL
-# ==========================================
+# Extração de features
 
 print("\nExecutando AndroPyTool...")
 
@@ -94,9 +84,7 @@ subprocess.run(
 
 print("Extração concluída.")
 
-# ==========================================
-# LOCALIZAR JSON
-# ==========================================
+# Localiza o JSON produzido pelo AndroPyTool
 
 json_files = glob.glob(
     os.path.join(
@@ -115,9 +103,7 @@ json_path = json_files[0]
 
 print(f"JSON encontrado: {json_path}")
 
-# ==========================================
-# CARREGAR JSON
-# ==========================================
+# Leitura das features extraídas
 
 with open(json_path, "r") as f:
     data = json.load(f)
@@ -137,9 +123,7 @@ opcodes = static.get(
     {}
 )
 
-# ==========================================
-# MONTAR FEATURES
-# ==========================================
+# Monta o vetor de entrada esperado pelo modelo
 
 row = {}
 
@@ -158,19 +142,13 @@ sample = sample.reindex(
 
 sample = selector.transform(sample)
 
-# ==========================================
-# PREDIÇÃO
-# ==========================================
+# Classificação
 
 prediction = model.predict(sample)[0]
 
 probabilities = model.predict_proba(sample)[0]
 
 confidence = max(probabilities) * 100
-
-# ==========================================
-# RESULTADO
-# ==========================================
 
 print("\n==========================")
 print("ANDROID MALWARE DETECTOR")
@@ -179,9 +157,7 @@ print("==========================")
 print(f"\nResultado : {prediction}")
 print(f"Confiança : {confidence:.2f}%")
 
-# ==========================================
-# SALVAR CSV
-# ==========================================
+# Armazena o resultado em CSV
 
 os.makedirs(
     OUTPUT_FOLDER,
@@ -229,9 +205,7 @@ print(
     f"\nResultado salvo em: {csv_path}"
 )
 
-# ==========================================
-# LIMPEZA
-# ==========================================
+# Remove arquivos temporários gerados durante a análise
 
 print("\nRemovendo arquivos temporários...")
 
